@@ -14,9 +14,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  # Build and test job - runs on both push and PR
-  build:
-    name: Build and Test
+  build-and-deploy:
+    name: Build and Deploy
     runs-on: ubuntu-latest
     timeout-minutes: 15
 
@@ -36,48 +35,12 @@ jobs:
       - name: 🔨 Build project
         run: yarn build
 
-      - name: 📤 Upload build artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: build-output
-          path: build/
-          retention-days: 1
-
-  # Deploy job - only runs on push to master
-  deploy:
-    name: Deploy to Vercel
-    runs-on: ubuntu-latest
-    needs: build
-    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
-    timeout-minutes: 15
-
-    environment:
-      name: production
-      url: https://seatly.vercel.app # Update with your actual Vercel URL
-
-    steps:
-      - name: 📥 Checkout repository
-        uses: actions/checkout@v4
-
-      - name: 📦 Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 24
-          cache: "yarn"
-
-      - name: 📥 Install dependencies
-        run: yarn install --frozen-lockfile
-
-      - name: 📥 Download build artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: build-output
-          path: build/
-
       - name: 🚀 Install Vercel CLI
+        if: github.event_name == 'push' && github.ref == 'refs/heads/master'
         run: yarn global add vercel@latest
 
       - name: 🚀 Deploy to Vercel
+        if: github.event_name == 'push' && github.ref == 'refs/heads/master'
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
