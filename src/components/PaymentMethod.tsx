@@ -1,5 +1,5 @@
 import { ArrowLeft, Check, CreditCard, Wallet } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { createBooking } from "../services/booking/booking.api";
 import { Seat } from "../services/seat/seat.type";
 import { PaymentOption } from "../services/booking";
@@ -20,6 +20,13 @@ export function PaymentMethod({ selectedSeats, onBack }: PaymentMethodProps) {
     () => selectedSeats.reduce((sum, seat) => sum + Number(seat.price ?? 0), 0),
     [selectedSeats]
   );
+
+  // Clear Momo selection if it's selected (since it's disabled)
+  useEffect(() => {
+    if (selectedPayment === PaymentOption.MOMO) {
+      setSelectedPayment(null);
+    }
+  }, [selectedPayment]);
 
   const handlePayNow = async () => {
     if (!selectedPayment || selectedSeats.length === 0) {
@@ -144,14 +151,13 @@ export function PaymentMethod({ selectedSeats, onBack }: PaymentMethodProps) {
 
             {/* Momo Option */}
             <button
-              onClick={() => setSelectedPayment(PaymentOption.MOMO)}
+              onClick={() => {}}
+              disabled
+              title="Coming Soon"
               className={`
-                w-full bg-[#1A2235] hover:bg-[#1F2943] rounded-2xl p-6 border-2 transition-all duration-200
-                ${
-                  selectedPayment === PaymentOption.MOMO
-                    ? "border-[#4F46E5] shadow-lg shadow-indigo-500/20"
-                    : "border-slate-800"
-                }
+                w-full bg-[#1A2235] rounded-2xl p-6 border-2 transition-all duration-200
+                opacity-50 cursor-not-allowed
+                border-slate-800
               `}
             >
               <div className="flex items-center justify-between">
@@ -164,11 +170,6 @@ export function PaymentMethod({ selectedSeats, onBack }: PaymentMethodProps) {
                     <div className="text-slate-400 text-sm">Momo Wallet</div>
                   </div>
                 </div>
-                {selectedPayment === PaymentOption.MOMO && (
-                  <div className="w-8 h-8 bg-[#4F46E5] rounded-full flex items-center justify-center">
-                    <Check className="w-5 h-5 text-white" />
-                  </div>
-                )}
               </div>
             </button>
           </div>
